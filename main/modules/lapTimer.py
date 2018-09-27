@@ -1,60 +1,112 @@
 import RPi.GPIO as GPIO
 import time, sys
-from Adafruit_LED_Backpack import AlphaNum4
-import threading
 import multiprocessing
-import datetime
+from Adafruit_LED_Backpack import SevenSegment
 
 class lapTimer (object):
-    def __init__(self):
-        ###  DEFINE EVENT FLAGS  
-        self.startStoprequest = multiprocessing.Event()     
-        self.startStoprequest.clear()
+    def __init__ (self):
+        ### DEFINE EVENT FLAGS #############
+        self.startStopRequest = multiprocessing.Event()     
+        self.startStopRequest.clear()
 
-        self.lapResetrequest = multiprocessing.Event()     
-        self.lapResetrequest.clear()
+        self.lapResetRequest = multiprocessing.Event()     
+        self.lapResetRequest.clear()
+        ####################################
 
-        self.counter = 0
+        ### SETUP DISPLAYS #################
+        #self.currentLapDisplay = SevenSegment.SevenSegment(address=0x72)
+        #self.currentLapDisplay.begin()
+
+        #self.lastLapDisplay = SevenSegment.SevenSegment(address=0x73)
+        #self.lastLapDisplay.begin()
+        ####################################
+
+        self.isRunning = False
+
+        self.elapsedTime = 0
+        self.startTime   = 0
+
+        self.currentSeconds = 0
+        self.currentMinutes = 0
+
+        self.previousSeconds = 0
+        self.previousMinutes = 0
 
     
-    def startTimer (self, currentTimerListener):
-        #startTime = time.time()
-        startTime = datetime.datetime.now()
+    def startTimer (self, stopFlag = None):
         timeOld = time.time()
 
-        currentTime = ""
+        self.startClock()
 
-        currentSeconds = 0
-        currentMinutes = 0
+        while not stopFlag.is_set():
 
-        while not self.stoprequest.is_set():
-            elapsed = datetime.datetime.now() - startTime
+            if self.startStopRequest.is_set():
+                self.startStopToggle()
+                self.startStopRequest.clear()
 
-            #currentSeconds += elapsed.seconds
+            if self.lapResetRequest.is_set():
+                self.lapResetToggle()
+                self.lapResetRequest.clear()
 
-            if (elapsed.seconds + 1) < elapsed.seconds:
-                currentSeconds += 1
-                if currentSeconds >= 60:
-                    currentSeconds = 0
-                    currentMinutes += 1
+            if self.isRunning:
+                self.elapsedTime = time.time() - self.startTime
+                timeStr = self.getTime(self.elapsedTime)
+
 
             if (timeOld + 1) < time.time():
                 timeOld = time.time()
+                #print(timeStr)
 
-                currentTime = str(currentMinutes) + ":" + str(currentSeconds)
-                currentTimerListener.put_nowait(currentTime)
+        return
 
-        print("stopped\n")        
+    def lapResetToggle (self):
+        if self.isRunning:
+            self.previousSeconds = self.currentSeconds
+            self.previousMinutes = self. currentMinutes
+
+        elif not self.isRunning:
+            self.currentSeconds = 0
+            self.currentMinutes = 0
+            self.elapsedTime    = 0
 
 
-    def setFlag(self, timeout=None):
-        print("Got stop request")
-        self.stoprequest.set()
+    def startStopToggle (self):
+        if self.isRunning:
+            self.stopTimer()
+            self.isRunning = False
+        elif not self.isRunning:
+            self.startClock()
+            self.isRunning = True
+
+
+    def getTime(self, elap):
+        minutes = int(elap/60)
+        seconds = int(elap - minutes * 60.0) 
+
+        self.currentMinutes = minutes     
+        self.currentSeconds = seconds 
+        timeStr = (str(minutes).zfill(2) + ":" + str(seconds).zfill(2))   
+        return timeStr 
+
+
+    def startClock (self):
+        if not self.isRunning:
+            self.startTime = time.time() - self.elapsedTime
+            self.isRunning = True
+
+
+    def stopTimer (self):
+        if self.isRunning:
+            self.isRunning = False
     
-    def setStartStopFlag(self, timeout=None):
+
+    def setStartStopFlag (self, timeout=None):
         print("Got Start/Stop request")
         self.startStopRequest.set()
 
-    def setLapResetFlag(self, timeout=None):
+
+    def setLapResetFlag (self, timeout=None):
         print("Got Lap/Reset request")
         self.lapResetRequest.set()
+
+
