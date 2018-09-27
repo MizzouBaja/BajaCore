@@ -3,7 +3,6 @@ import modules.lapTimer as lapTimerModule
 import modules.buttons as buttonsModule
 import time, sys
 import multiprocessing
-import RPi.GPIO as GPIO
 
 
 def main ():

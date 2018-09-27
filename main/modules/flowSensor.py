@@ -1,9 +1,9 @@
-import RPi.GPIO as GPIO
 import time, sys
-from Adafruit_LED_Backpack import AlphaNum4
-from Adafruit_LED_Backpack import BicolorBargraph24
 import math
 import multiprocessing
+import RPi.GPIO as GPIO
+from Adafruit_LED_Backpack import BicolorBargraph24
+
 
 
 class flowSensor (object):
@@ -17,8 +17,8 @@ class flowSensor (object):
         ####################################
 
         ### GPIO PIN 13 FLOW METER #########
-        self.inpt_flow = 13
-        GPIO.setup(self.inpt_flow, GPIO.IN)
+        self.flowSensorInput = 13
+        GPIO.setup(self.flowSensorInput, GPIO.IN)
         ####################################
 
         ### SET STATIC VALUES ##############
@@ -48,10 +48,10 @@ class flowSensor (object):
 
         testCounter = 0
 
-        gpio_last = GPIO.input(self.inpt_flow)
+        gpio_last = GPIO.input(self.flowSensorInput)
 
         while not stopFlag.is_set():
-            gpio_cur = GPIO.input(self.inpt_flow)
+            gpio_cur = GPIO.input(self.flowSensorInput)
             
             if gpio_cur != 0 and gpio_cur != gpio_last:
                 self.currentFuel -= self.pulseIncrement
@@ -140,7 +140,7 @@ class fuelDisplay (object):
         self.barDisplay.set_brightness(15)  
         ####################################  
 
-        self.flashToggle = False 
+        self.flashToggle = True 
 
 
     def displayFuel (self, currentFuel, maxFuel):   

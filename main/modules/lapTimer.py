@@ -1,4 +1,3 @@
-import RPi.GPIO as GPIO
 import time, sys
 import multiprocessing
 from Adafruit_LED_Backpack import SevenSegment
@@ -53,7 +52,8 @@ class lapTimer (object):
                 timeStr = self.getTime(self.elapsedTime)
 
 
-            if (timeOld + 1) < time.time():
+            ### UPDATE DISPLAY EVERY 0.5 SECONDS ###
+            if (timeOld + 0.5) < time.time():
                 timeOld = time.time()
                 #print(timeStr)
 
