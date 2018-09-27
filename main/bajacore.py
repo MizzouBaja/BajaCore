@@ -14,6 +14,18 @@ def main ():
     coreController.startProcesses()
     ####################################
 
+    ### TESTING ###
+    coreController.buttonController.timerStartStopTest()
+    time.sleep(5)
+    #coreController.buttonController.resetFuelTest()
+    coreController.buttonController.timerLapResetTest()
+    time.sleep(4)
+    coreController.buttonController.timerStartStopTest()
+    time.sleep(4)
+    coreController.buttonController.timerLapResetTest()
+    time.sleep(2)
+    coreController.buttonController.timerStartStopTest()
+
     ### WAIT FOR KEYBOARD INPUT ########
     try:
         print("Enter \"q\" to quit.\n\n")
@@ -51,14 +63,6 @@ class controller (object):
         self.buttonController = buttonsModule.buttons()
         self.setupButtons()
         ####################################
-        
-        ### TESTING ###
-        # time.sleep(8)
-        # self.buttonController.resetFuelTest()
-        # self.buttonController.timerStartStopTest()
-        # self.buttonController.timerLapResetTest()
-        # time.sleep(2)
-        # self.buttonController.timerStartStopTest()
         
 
     def startProcesses (self):

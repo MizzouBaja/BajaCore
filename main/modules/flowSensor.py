@@ -65,6 +65,7 @@ class flowSensor (object):
             ### CHECK FOR FUEL LEVEL RESET ###
             if self.resetRequest.is_set():
                 self.currentFuel = self.maxFuel
+                self.saveCurrentFuel(self.filePath, self.currentFuel) 
                 self.resetRequest.clear()
 
             
@@ -81,7 +82,7 @@ class flowSensor (object):
 
                 ### TESTING ###
                 self.currentFuel -= 0.1
-                print("Fuel: " + str(round(self.currentFuel, 2))) 
+                #print("Fuel: " + str(round(self.currentFuel, 2))) 
 
         ### SAVE FUEL BEFORE EXITING ###
         self.saveCurrentFuel(self.filePath, self.currentFuel) 

@@ -35,7 +35,7 @@ class lapTimer (object):
     def startTimer (self, stopFlag = None):
         timeOld = time.time()
 
-        self.startClock()
+        #self.startClock()
 
         while not stopFlag.is_set():
 
@@ -53,9 +53,11 @@ class lapTimer (object):
 
 
             ### UPDATE DISPLAY EVERY 0.5 SECONDS ###
-            if (timeOld + 0.5) < time.time():
+            if (timeOld + 1) < time.time():
                 timeOld = time.time()
-                #print(timeStr)
+                print("Current: " + str(self.currentMinutes).zfill(2) + ":" + str(self.currentSeconds).zfill(2) + "  |  Previous: " + str(self.previousMinutes).zfill(2) + ":" + str(self.previousSeconds).zfill(2)) 
+                #print("Previous: " + str(self.previousMinutes).zfill(2) + ":" + str(self.previousSeconds).zfill(2))  
+ 
 
         return
 
@@ -63,20 +65,24 @@ class lapTimer (object):
         if self.isRunning:
             self.previousSeconds = self.currentSeconds
             self.previousMinutes = self. currentMinutes
+            self.currentSeconds  = 0
+            self.currentMinutes  = 0
+            self.elapsedTime     = 0
+            self.startTime       = time.time()
 
         elif not self.isRunning:
-            self.currentSeconds = 0
-            self.currentMinutes = 0
-            self.elapsedTime    = 0
+            self.currentSeconds  = 0
+            self.currentMinutes  = 0
+            self.elapsedTime     = 0
+            self.previousSeconds = 0
+            self.previousMinutes = 0
 
 
     def startStopToggle (self):
         if self.isRunning:
             self.stopTimer()
-            self.isRunning = False
         elif not self.isRunning:
             self.startClock()
-            self.isRunning = True
 
 
     def getTime(self, elap):
