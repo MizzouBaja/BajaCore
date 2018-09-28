@@ -106,7 +106,7 @@ class controller (object):
 
     def setupLapTimerProcess (self):
         lapTimer = lapTimerModule.lapTimer()
-        lapTimerProcess = multiprocessing.Process(target = lapTimer.startTimer, args = (self.stopFlag,))
+        lapTimerProcess = multiprocessing.Process(target = lapTimer.startLapTimer, args = (self.stopFlag,))
         
         process = ('Lap Timer', lapTimerProcess)
         self.processes.append(process)

@@ -12,30 +12,22 @@ class lapTimer (object):
         self.lapResetRequest.clear()
         ####################################
 
-        ### SETUP DISPLAYS #################
-        #self.currentLapDisplay = SevenSegment.SevenSegment(address=0x72)
-        #self.currentLapDisplay.begin()
 
-        #self.lastLapDisplay = SevenSegment.SevenSegment(address=0x73)
-        #self.lastLapDisplay.begin()
+        ### SETUP DISPLAYS #################
+        self.lapTimerDisplay = lapTimerDisplay()
         ####################################
 
-        self.isRunning = False
-
-        self.elapsedTime = 0
-        self.startTime   = 0
-
-        self.currentSeconds = 0
-        self.currentMinutes = 0
-
-        self.previousSeconds = 0
-        self.previousMinutes = 0
+    
+        ### TIMER VALUES ###################
+        self.currentElapsedTime  = 0
+        self.previousElapsedTime = 0
+        self.startTime           = 0
+        self.isRunning           = False
+        ####################################
 
     
-    def startTimer (self, stopFlag = None):
-        timeOld = time.time()
-
-        #self.startClock()
+    def startLapTimer (self, stopFlag = None):
+        timeOldDisplay = time.time()
 
         while not stopFlag.is_set():
 
@@ -48,56 +40,38 @@ class lapTimer (object):
                 self.lapResetRequest.clear()
 
             if self.isRunning:
-                self.elapsedTime = time.time() - self.startTime
-                timeStr = self.getTime(self.elapsedTime)
+                self.currentElapsedTime = time.time() - self.startTime
 
 
             ### UPDATE DISPLAY EVERY 0.5 SECONDS ###
-            if (timeOld + 1) < time.time():
-                timeOld = time.time()
-                print("Current: " + str(self.currentMinutes).zfill(2) + ":" + str(self.currentSeconds).zfill(2) + "  |  Previous: " + str(self.previousMinutes).zfill(2) + ":" + str(self.previousSeconds).zfill(2)) 
-                #print("Previous: " + str(self.previousMinutes).zfill(2) + ":" + str(self.previousSeconds).zfill(2))  
+            if (timeOldDisplay + 0.5) < time.time():              
+                self.lapTimerDisplay.displayTime(self.currentElapsedTime, self.previousElapsedTime)
+                timeOldDisplay = time.time()
  
-
         return
+
 
     def lapResetToggle (self):
         if self.isRunning:
-            self.previousSeconds = self.currentSeconds
-            self.previousMinutes = self. currentMinutes
-            self.currentSeconds  = 0
-            self.currentMinutes  = 0
-            self.elapsedTime     = 0
-            self.startTime       = time.time()
+            self.previousElapsedTime = self.currentElapsedTime
+            self.currentElapsedTime  = 0
+            self.startTime           = time.time()
 
         elif not self.isRunning:
-            self.currentSeconds  = 0
-            self.currentMinutes  = 0
-            self.elapsedTime     = 0
-            self.previousSeconds = 0
-            self.previousMinutes = 0
+            self.currentElapsedTime  = 0
+            self.previousElapsedTime = 0
 
 
     def startStopToggle (self):
         if self.isRunning:
             self.stopTimer()
         elif not self.isRunning:
-            self.startClock()
+            self.startTimer()
 
 
-    def getTime(self, elap):
-        minutes = int(elap/60)
-        seconds = int(elap - minutes * 60.0) 
-
-        self.currentMinutes = minutes     
-        self.currentSeconds = seconds 
-        timeStr = (str(minutes).zfill(2) + ":" + str(seconds).zfill(2))   
-        return timeStr 
-
-
-    def startClock (self):
+    def startTimer (self):
         if not self.isRunning:
-            self.startTime = time.time() - self.elapsedTime
+            self.startTime = time.time() - self.currentElapsedTime
             self.isRunning = True
 
 
@@ -116,3 +90,48 @@ class lapTimer (object):
         self.lapResetRequest.set()
 
 
+class lapTimerDisplay (object):
+    def __init__ (self):
+        ### SETUP DISPLAYS #################
+        # self.currentLapDisplay = Sevendisplay.Sevendisplay(address=0x72)
+        # self.currentLapDisplay.begin()
+
+        # self.previousLapDisplay = Sevendisplay.Sevendisplay(address=0x73)
+        # self.previousLapDisplay.begin()
+        ####################################
+        place = 0
+
+    def displayTime (self, currentElapsed, previousElapsed):
+        ### FORMAT TIMES ###
+        formatCurrent  = self.formatTime(currentElapsed)
+        formatPrevious = self.formatTime(previousElapsed)
+
+        ### UPDATE DISPLAYS ###
+        #self.setDisplay(self.currentLapDisplay, formatCurrent)
+        #self.setDisplay(self.previousLapDisplay, formatPrevious)
+
+        ### TESTING ###
+        print("Current: " + str(formatCurrent[0]).zfill(2) + ":" + str(formatCurrent[1]).zfill(2) + "  |  Previous: " + str(formatPrevious[0]).zfill(2) + ":" + str(formatPrevious[1]).zfill(2)) 
+
+
+    def setDisplay (self, display, time):
+        display.clear()
+
+        ### SET MINUTES ###
+        display.set_digit(0, int(time[0] / 10))
+        display.set_digit(1, time[0] % 10)
+
+        ### SET SECONDS ###
+        display.set_digit(2, int(time[1] / 10))
+        display.set_digit(3, time[1] % 10)
+
+        display.set_colon(1)    
+
+        display.write_display()
+    
+    def formatTime (self, elapsed):
+        minutes = int(elapsed/60)
+        seconds = int(elapsed - minutes * 60.0) 
+
+        time = (minutes, seconds)   
+        return time
