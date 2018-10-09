@@ -14,26 +14,21 @@ def main ():
     coreController.startProcesses()
     ####################################
 
-    ### TESTING ###
-    coreController.buttonController.timerStartStopTest()
-    time.sleep(5)
-    #coreController.buttonController.resetFuelTest()
-    coreController.buttonController.timerLapResetTest()
-    time.sleep(4)
-    coreController.buttonController.timerStartStopTest()
-    time.sleep(4)
-    coreController.buttonController.timerLapResetTest()
-    time.sleep(2)
-    coreController.buttonController.timerStartStopTest()
 
     ### WAIT FOR KEYBOARD INPUT ########
     try:
-        print("Enter \"q\" to quit.\n\n")
+        print("\nEnter \"q\" to quit.")
+        print("Enter \"s\" to start/stop timer.")
+        print("Enter \"r\" to lap/reset timer.\n")
         while True:
             inputBuffer = input()
             if inputBuffer:
                 if inputBuffer == "q":
                     break
+                if inputBuffer == "s":
+                    coreController.buttonController.timerStartStopTest()
+                if inputBuffer == "r":
+                    coreController.buttonController.timerLapResetTest()
             else:
                 pass
 

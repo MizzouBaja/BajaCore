@@ -8,10 +8,10 @@ class buttons (object):
         ####################################
 
         ### DEFINE BUTTON PIN ASSIGNMENTS ##
-        self.resetFuelButtonGPIO    = 16 
-        self.lapResetButtonGPIO     = 21
-        self.startStopButtonGPIO    = 22
-        self.modeButtonGPIO         = 23
+        self.resetFuelButtonGPIO    = 5  # YELLOW
+        self.lapResetButtonGPIO     = 13  # ORANGE 
+        self.startStopButtonGPIO    = 26  # WHITE
+        self.modeButtonGPIO         = 6  # GRAY
         self.buttonBounce           = 400 
         ####################################
 
@@ -24,25 +24,25 @@ class buttons (object):
         self.flowSensor = flowSensor
     
         GPIO.setup(self.resetFuelButtonGPIO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(self.resetFuelButtonGPIO, GPIO.RISING, callback = self.resetFuelEvent, bouncetime = self.buttonBounce)
+        #GPIO.add_event_detect(self.resetFuelButtonGPIO, GPIO.RISING, callback = self.resetFuelEvent, bouncetime = self.buttonBounce)
 
     def setLapTimer (self, lapTimer):
         self.lapTimer = lapTimer
 
         GPIO.setup(self.startStopButtonGPIO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(self.startStopButtonGPIO, GPIO.RISING, callback = self.timerStartStopEvent, bouncetime = self.buttonBounce)
+        GPIO.add_event_detect(self.startStopButtonGPIO, GPIO.FALLING, callback = self.timerStartStopEvent, bouncetime = self.buttonBounce)
 
         GPIO.setup(self.lapResetButtonGPIO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(self.lapResetButtonGPIO, GPIO.RISING, callback = self.timerLapResetEvent, bouncetime = self.buttonBounce)
+        GPIO.add_event_detect(self.lapResetButtonGPIO, GPIO.FALLING, callback = self.timerLapResetEvent, bouncetime = self.buttonBounce)
         
 
-    def resetFuelEvent (channel):  
+    def resetFuelEvent (self, channel):  
         self.flowSensor.setFuelResetFlag()
 
-    def timerStartStopEvent (channel):  
+    def timerStartStopEvent (self, channel):  
         self.lapTimer.setStartStopFlag()
 
-    def timerLapResetEvent (channel):  
+    def timerLapResetEvent (self, channel):  
         self.lapTimer.setLapResetFlag()
 
     

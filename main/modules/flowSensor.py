@@ -22,8 +22,9 @@ class flowSensor (object):
         ####################################
 
         ### SET STATIC VALUES ##############
-        self.maxFuel            = 100
-        self.pulseIncrement     = 0.01
+        #Actual Max Fuel        = 2839.06
+        self.maxFuel            = 2500
+        self.pulseIncrement     = 0.2053388
         self.saveDelaySeconds   = 10
         ####################################
 
@@ -31,7 +32,7 @@ class flowSensor (object):
         fileLocation = '/srv/baja/BajaCore/main/saveData'
         fileName = 'currentFuel.txt'
         self.filePath = fileLocation + '/' + fileName
-        self.currentFuel = round(float(self.openCurrentFuel(self.filePath)), 2)
+        self.currentFuel = round(float(self.openCurrentFuel(self.filePath)), 8)
         ####################################
 
         ### FUEL RESET REQUEST #############
@@ -46,8 +47,6 @@ class flowSensor (object):
         timeOldFile    = time.time()
         timeOldDisplay = time.time()
 
-        testCounter = 0
-
         gpio_last = GPIO.input(self.flowSensorInput)
 
         while not stopFlag.is_set():
@@ -55,10 +54,6 @@ class flowSensor (object):
             
             if gpio_cur != 0 and gpio_cur != gpio_last:
                 self.currentFuel -= self.pulseIncrement
-
-                ### TESTING ###
-                testCounter += 1
-                print("Counter: " + str(testCounter))  
             gpio_last = gpio_cur
 
 
@@ -81,7 +76,9 @@ class flowSensor (object):
                 timeOldDisplay = time.time()
 
                 ### TESTING ###
-                self.currentFuel -= 0.1
+                self.currentFuel -= 10
+                if self.currentFuel < 0:
+                    self.currentFuel = 0
                 #print("Fuel: " + str(round(self.currentFuel, 2))) 
 
         ### SAVE FUEL BEFORE EXITING ###
@@ -118,7 +115,7 @@ class flowSensor (object):
         try:
             print("Writing fuel.")
             saveFile = open(filePath, "w")
-            saveFile.write(str(round(currentFuel, 2)))
+            saveFile.write(str(round(currentFuel, 8)))
             saveFile.close()
             
         except IOError:
