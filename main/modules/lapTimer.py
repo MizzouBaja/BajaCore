@@ -12,6 +12,15 @@ class lapTimer (object):
 
         self.lapResetRequest = multiprocessing.Event()     
         self.lapResetRequest.clear()
+
+        self.lapCounterResetRequest = multiprocessing.Event()     
+        self.lapCounterResetRequest.clear()
+
+        self.lapModeToggleRequest = multiprocessing.Event()     
+        self.lapModeToggleRequest.clear()
+
+        self.multiModeToggleRequest = multiprocessing.Event()     
+        self.multiModeToggleRequest.clear()
         ####################################
 
 
@@ -22,10 +31,17 @@ class lapTimer (object):
     
         ### TIMER VALUES ###################
         self.currentElapsedTime  = 0
+        self.fastestTime         = 0
         self.previousElapsedTime = 0
         self.startTime           = 0
         self.isRunning           = False
         self.lapCounter          = 0
+        ####################################
+
+
+        ### SETUP DISPLAYS #################
+        self.currentLapMode = 0
+        self.currentMultiMode = 0
         ####################################
 
     
@@ -42,22 +58,69 @@ class lapTimer (object):
                 self.lapResetToggle()
                 self.lapResetRequest.clear()
 
+            if self.lapCounterResetRequest.is_set():
+                self.resetLapCount()
+                self.lapCounterResetRequest.clear()
+
+            if self.lapModeToggleRequest.is_set():
+                self.lapModeToggle()
+                self.lapModeToggleRequest.clear()
+
+            if self.multiModeToggleRequest.is_set():
+                self.multiModeToggle()
+                self.multiModeToggleRequest.clear()
+
             if self.isRunning:
                 self.currentElapsedTime = time.time() - self.startTime
 
 
             ### UPDATE DISPLAY EVERY 0.5 SECONDS ###
             if (timeOldDisplay + 0.5) < time.time():
-                if self.isRunning:              
+                #if self.isRunning:
+                if self.currentLapMode is 0:
                     self.lapTimerDisplay.displayTime(self.currentElapsedTime, self.previousElapsedTime)
+                if self.currentLapMode is 1:
+                    self.lapTimerDisplay.displayTime(self.currentElapsedTime, self.fastestTime)
+
+                if self.currentMultiMode is 0:
                     self.lapTimerDisplay.displayLap(self.lapCounter)
+                if self.currentMultiMode is 1:
+                    self.lapTimerDisplay.displayShowOff()
                 timeOldDisplay = time.time()
  
         return
 
+    def lapModeToggle (self):
+        maxMode = 1
+
+        if not self.isRunning:
+            if self.currentLapMode < maxMode:
+                self.currentLapMode += 1
+            elif self.currentLapMode >= maxMode:
+                self.currentLapMode = 0
+
+            self.lapTimerDisplay.displayMode(self.currentLapMode)
+            time.sleep(1)
+            self.isRunning = False
+
+    def multiModeToggle (self):
+        maxMode = 1
+        print("Mode switch")
+        if self.currentMultiMode < maxMode:
+            self.currentMultiMode += 1
+        elif self.currentMultiMode >= maxMode:
+            self.currentMultiMode = 0
+
+    def resetLapCount (self):
+        self.lapCounter = 0
 
     def lapResetToggle (self):
         if self.isRunning:
+            if self.currentElapsedTime < self.fastestTime:
+                self.fastestTime = self.currentElapsedTime
+            elif self.fastestTime is 0:
+                self.fastestTime = self.currentElapsedTime
+
             self.previousElapsedTime = self.currentElapsedTime
             self.currentElapsedTime  = 0
             self.startTime           = time.time()
@@ -95,28 +158,69 @@ class lapTimer (object):
         print("Got Lap/Reset request")
         self.lapResetRequest.set()
 
+    def setLapCoutnerResetFlag (self, timeout=None):
+        print("Got Lap Counter Reset request")
+        self.lapCounterResetRequest.set()
+
+    def setLapModeToggleFlag (self, timeout=None):
+        print("Got Mode toggle request")
+        self.lapModeToggleRequest.set()
+
+    def setMultiModeFlag (self, timeout=None):
+        print("Got multi Mode toggle request")
+        self.multiModeToggleRequest.set()
 
 class lapTimerDisplay (object):
     def __init__ (self):
         ### SETUP DISPLAYS #################
         self.currentLapDisplay = SevenSegment.SevenSegment(address=0x72)
         self.currentLapDisplay.begin()
+        self.currentLapDisplay.clear()
 
         self.previousLapDisplay = SevenSegment.SevenSegment(address=0x73)
         self.previousLapDisplay.begin()
+        self.previousLapDisplay.clear()
 
-        self.lapDisplay = AlphaNum4.AlphaNum4(address=0x70)
-        self.lapDisplay.begin()
+        self.multiDisplay = AlphaNum4.AlphaNum4(address=0x70)
+        self.multiDisplay.begin()
+        self.multiDisplay.clear()
         ####################################
         
         self.displayTime(0, 0)
+        self.textIndex = 0
 
     def displayLap (self, lapCount):
-        self.lapDisplay.clear()
+        self.multiDisplay.clear()
 
-        self.lapDisplay.print_str(str(lapCount)[0:3])
+        self.multiDisplay.print_str(str(lapCount)[0:3])
 
-        self.lapDisplay.write_display()
+        self.multiDisplay.write_display()
+
+    def displayMode (self, mode):
+        if mode is 0:
+            message = 'LAST'
+        if mode is 1:
+            message = 'FAST'
+
+        self.multiDisplay.clear()
+
+        self.multiDisplay.print_str(message[0:4])
+
+        self.multiDisplay.write_display()
+        time.sleep(2.5)
+
+    def displayShowOff (self):
+        message = '   Mizzou Baja    '
+
+        self.multiDisplay.clear()
+
+        self.multiDisplay.print_str(message[self.textIndex:self.textIndex+4])
+
+        self.multiDisplay.write_display()
+
+        self.textIndex += 1
+        if self.textIndex > len(message)-4:
+            self.textIndex = 0
 
     def displayTime (self, currentElapsed, previousElapsed):
         ### FORMAT TIMES ###

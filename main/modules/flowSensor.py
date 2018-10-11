@@ -4,7 +4,8 @@ import multiprocessing
 import RPi.GPIO as GPIO
 from Adafruit_LED_Backpack import BicolorBargraph24
 
-
+###TEST
+from Adafruit_LED_Backpack import AlphaNum4
 
 class flowSensor (object):
     def __init__ (self):
@@ -17,7 +18,7 @@ class flowSensor (object):
         ####################################
 
         ### GPIO PIN 13 FLOW METER #########
-        self.flowSensorInput = 13
+        self.flowSensorInput = 25
         GPIO.setup(self.flowSensorInput, GPIO.IN)
         ####################################
 
@@ -49,11 +50,14 @@ class flowSensor (object):
 
         gpio_last = GPIO.input(self.flowSensorInput)
 
+        counter = 0
+
         while not stopFlag.is_set():
             gpio_cur = GPIO.input(self.flowSensorInput)
             
             if gpio_cur != 0 and gpio_cur != gpio_last:
                 self.currentFuel -= self.pulseIncrement
+                counter += 1
             gpio_last = gpio_cur
 
 
@@ -73,10 +77,11 @@ class flowSensor (object):
             ### UPDATE DISPLAY EVERY 1 SECOND ###
             if (timeOldDisplay + 1) < time.time():
                 self.fuelDisplay.displayFuel(self.currentFuel, self.maxFuel)
+                #self.fuelDisplay.displayFuelCount(self.currentFuel)
                 timeOldDisplay = time.time()
 
                 ### TESTING ###
-                self.currentFuel -= 10
+                #self.currentFuel -= 2
                 if self.currentFuel < 0:
                     self.currentFuel = 0
                 #print("Fuel: " + str(round(self.currentFuel, 2))) 
@@ -141,6 +146,12 @@ class fuelDisplay (object):
         self.flashToggle = True 
 
 
+        #### TESTING
+        # self.lapDisplay = AlphaNum4.AlphaNum4(address=0x70)
+        # self.lapDisplay.begin()
+        # self.lapDisplay.clear()
+
+
     def displayFuel (self, currentFuel, maxFuel):   
         currentFuelPercentage = currentFuel / maxFuel
         
@@ -171,5 +182,12 @@ class fuelDisplay (object):
         ### UPDATE DISPLAY ###
         self.barDisplay.write_display()
 
+    #TESTING
+    def displayFuelCount (self, fuel):
+        self.lapDisplay.clear()
+
+        self.lapDisplay.print_str(str(round(fuel, 1))[0:4])
+
+        self.lapDisplay.write_display()
         
     

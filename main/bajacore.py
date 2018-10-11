@@ -29,6 +29,8 @@ def main ():
                     coreController.buttonController.timerStartStopTest()
                 if inputBuffer == "r":
                     coreController.buttonController.timerLapResetTest()
+                if inputBuffer == "f":
+                    coreController.buttonController.resetFuelTest()
             else:
                 pass
 
