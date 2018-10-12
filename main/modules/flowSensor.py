@@ -50,6 +50,7 @@ class flowSensor (object):
 
         gpio_last = GPIO.input(self.flowSensorInput)
 
+        ### TEST COUNTER ###
         counter = 0
 
         while not stopFlag.is_set():
@@ -58,6 +59,7 @@ class flowSensor (object):
             if gpio_cur != 0 and gpio_cur != gpio_last:
                 self.currentFuel -= self.pulseIncrement
                 counter += 1
+                print(str(counter))
             gpio_last = gpio_cur
 
 
@@ -77,14 +79,12 @@ class flowSensor (object):
             ### UPDATE DISPLAY EVERY 1 SECOND ###
             if (timeOldDisplay + 1) < time.time():
                 self.fuelDisplay.displayFuel(self.currentFuel, self.maxFuel)
-                #self.fuelDisplay.displayFuelCount(self.currentFuel)
                 timeOldDisplay = time.time()
+                ### DISPLAY TEST COUNTER ###
+                #self.fuelDisplay.displayFuelCount(self.currentFuel)
 
-                ### TESTING ###
-                #self.currentFuel -= 2
-                if self.currentFuel < 0:
+                if self.currentFuel <= 0:
                     self.currentFuel = 0
-                #print("Fuel: " + str(round(self.currentFuel, 2))) 
 
         ### SAVE FUEL BEFORE EXITING ###
         self.saveCurrentFuel(self.filePath, self.currentFuel) 
@@ -118,7 +118,7 @@ class flowSensor (object):
     
     def saveCurrentFuel (self, filePath, currentFuel):
         try:
-            print("Writing fuel.")
+            #print("Writing fuel.")
             saveFile = open(filePath, "w")
             saveFile.write(str(round(currentFuel, 8)))
             saveFile.close()
@@ -128,7 +128,7 @@ class flowSensor (object):
 
 
     def setFuelResetFlag(self, timeout = None):
-        print("Got fuel reset request")
+        #print("Got fuel reset request")
         self.resetRequest.set()
             
         
@@ -146,7 +146,7 @@ class fuelDisplay (object):
         self.flashToggle = True 
 
 
-        #### TESTING
+        ### TEST DISPLAY ###
         # self.lapDisplay = AlphaNum4.AlphaNum4(address=0x70)
         # self.lapDisplay.begin()
         # self.lapDisplay.clear()
@@ -182,12 +182,12 @@ class fuelDisplay (object):
         ### UPDATE DISPLAY ###
         self.barDisplay.write_display()
 
-    #TESTING
-    def displayFuelCount (self, fuel):
-        self.lapDisplay.clear()
+    ### DISPLAY TESTING COUNTER ###
+    # def displayFuelCount (self, fuel):
+    #     self.lapDisplay.clear()
 
-        self.lapDisplay.print_str(str(round(fuel, 1))[0:4])
+    #     self.lapDisplay.print_str(str(round(fuel, 1))[0:4])
 
-        self.lapDisplay.write_display()
+    #     self.lapDisplay.write_display()
         
     

@@ -39,8 +39,11 @@ class buttons (object):
         GPIO.add_event_detect(self.modeButtonGPIO , GPIO.RISING, callback = self.multiModeEvent, bouncetime = self.buttonBounce)
 
     def resetFuelEvent (self, channel): 
-        if self.getHoldTime(channel) > 3:   
+        holdTime = self.getHoldTime(self.resetFuelButtonGPIO)
+
+        if holdTime > 3:   
             self.flowSensor.setFuelResetFlag()
+            self.lapTimer.setFuelResetFlag()
 
     def timerStartStopEvent (self, channel): 
         holdTime = self.getHoldTime(self.startStopButtonGPIO)
@@ -49,21 +52,23 @@ class buttons (object):
             self.lapTimer.setStartStopFlag()
         elif holdTime >= 2: 
             self.lapTimer.setLapModeToggleFlag()
-            #time.sleep(1)
             
     def timerLapResetEvent (self, channel):  
         self.lapTimer.setLapResetFlag()
 
     def multiModeEvent (self, channel): 
-        if GPIO.input(self.modeButtonGPIO) is 1:
+        holdTime = self.getHoldTime(self.modeButtonGPIO)
+
+        if holdTime < 2 and holdTime > 0.1 and GPIO.input(self.modeButtonGPIO) is 0:
             self.lapTimer.setMultiModeFlag()
-        #time.sleep(0.1)
+        elif holdTime >= 2:
+            self.lapTimer.setLapCoutnerResetFlag()
+
 
     def getHoldTime (self, channel):
         start = time.time()
         gpio_cur = GPIO.input(channel)
         while gpio_cur is 1:
-            #time.sleep(0.02)
             gpio_cur = GPIO.input(channel)
 
         length = time.time() - start

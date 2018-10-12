@@ -17,27 +17,28 @@ def main ():
 
     ### WAIT FOR KEYBOARD INPUT ########
     try:
-        print("\nEnter \"q\" to quit.")
-        print("Enter \"s\" to start/stop timer.")
-        print("Enter \"r\" to lap/reset timer.\n")
+        # print("\nEnter \"q\" to quit.")
+        # print("Enter \"s\" to start/stop timer.")
+        # print("Enter \"r\" to lap/reset timer.\n")
         while True:
-            inputBuffer = input()
-            if inputBuffer:
-                if inputBuffer == "q":
-                    break
-                if inputBuffer == "s":
-                    coreController.buttonController.timerStartStopTest()
-                if inputBuffer == "r":
-                    coreController.buttonController.timerLapResetTest()
-                if inputBuffer == "f":
-                    coreController.buttonController.resetFuelTest()
-            else:
-                pass
+            # inputBuffer = input()
+            # if inputBuffer:
+            # if inputBuffer == "q":
+            #     break
+            #     if inputBuffer == "s":
+            #         coreController.buttonController.timerStartStopTest()
+            #     if inputBuffer == "r":
+            #         coreController.buttonController.timerLapResetTest()
+            #     if inputBuffer == "f":
+            #         coreController.buttonController.resetFuelTest()
+            # else:
+            pass
+            pass
 
         coreController.killProcesses()
 
-    except KeyboardInterrupt:
-        print("\nKeyboardInterrupt: Terminating all processes.")
+    except:
+        print("\nTerminating all processes.")
         coreController.killProcesses()
 
 
